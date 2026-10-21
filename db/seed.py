@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2.errors import InFailedSqlTransaction, UndefinedTable
-from connection import get_connection
+from db.connection import get_connection
 import os
 import json
 
