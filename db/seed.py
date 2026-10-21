@@ -1,9 +1,12 @@
 import psycopg2
 from psycopg2.errors import InFailedSqlTransaction, UndefinedTable
-from db.connection import get_connection
 import os
 import json
 
+if not __name__ == '__main__':
+    from db.connection import get_connection
+else:
+    from connection import get_connection
 
 def seed():
 
