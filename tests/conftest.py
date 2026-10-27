@@ -2,12 +2,12 @@ import pytest
 import os
 import psycopg2
 from fastapi.testclient import TestClient
-
+os.environ['ENV'] = 'testing'
 from main import app
 from db.connection import get_connection
 from db.seed import seed, setup_table_structure, erd_structure_dict
 
-os.environ['ENV'] = 'testing'
+
 
 @pytest.fixture
 def client():
