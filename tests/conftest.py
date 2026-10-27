@@ -2,6 +2,7 @@ import pytest
 import os
 import psycopg2
 from fastapi.testclient import TestClient
+from fastapi import HTTPException
 os.environ['ENV'] = 'testing'
 from main import app
 from db.connection import get_connection
@@ -37,10 +38,9 @@ def event_1():
             "organiser_id": 1,
             "venue_id": 3}
         
-
 @pytest.fixture
 def rsvp_1():
-    return {"attendee_id": 2, "event_id": 1}
+    return {"id": 1, "attendee_id": 2, "event_id": 1}
         
 @pytest.fixture
 def user_1():

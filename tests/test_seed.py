@@ -20,9 +20,9 @@ def test_seed_sets_up_table_structure(cursor,teardown_and_setup_empty):
     
 
 # def test_full_seed_populates_with_test_values(cursor,full_seed,event_1,rsvp_1,user_1,venue_1):
-#     # cursor.execute('SELECT * FROM events LIMIT 1')
-#     # sample_event = dict(cursor.fetchone())
-#     # assert event_1 == sample_event
+#     cursor.execute('SELECT * FROM events LIMIT 1')
+#     sample_event = dict(cursor.fetchone())
+#     assert event_1 == sample_event
 
 #     cursor.execute('SELECT * FROM rsvps LIMIT 1')
 #     sample_rsvp = dict(cursor.fetchone())
