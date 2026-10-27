@@ -23,10 +23,22 @@ def test_get_single_event_by_id_returns_correct_json_format(client):
     assert isinstance(response['event'], list)
     assert isinstance(response['event'][0], dict)
 
-def test_get_single_event_by_id_returns_correct_event(client,event_1):
-    response = client.get('/events/1').json()
-    for k,v in event_1.items():
-        assert response['event'][0][k] == v
+def test_get_single_event_by_id_returns_correct_event_and_status_code(client,event_1):
+    response = client.get('/events/1')
+    expected_event = {
+                        "id": 1,
+                        "title": "event_d",
+                        "description": "description_d",
+                        "starts_at": "2026-02-02T10:00:00+00:00",
+                        "ends_at": "2026-02-02T11:00:00+00:00",
+                        "location": "venue_a",
+                        "address": "address_a",
+                        "capacity": 10
+                        }
+    
+    for k,v in expected_event.items():
+        assert response.json()['event'][0][k] == v
+    assert response.status_code == 200
 
 def test_get_single_event_by_id_raises_correct_exception_for_nonexistent_id(client):
     response = client.get('/events/99')

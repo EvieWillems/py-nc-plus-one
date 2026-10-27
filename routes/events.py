@@ -31,7 +31,19 @@ def get_single_event_by_id(event_id):
         raise HTTPException(status_code=400,
                                 detail=f'{event_id} is not a valid integer')
     with get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:         
-        cursor.execute('SELECT * FROM events WHERE id = %s;',(event_id,))
+        cursor.execute('SELECT ' \
+                        'events.id, ' \
+                        'events.title, ' \
+                        'events.description, ' \
+                        'events.starts_at, ' \
+                        'events.ends_at, ' \
+                        'venues.name AS location, ' \
+                        'venues.address, ' \
+                        'venues.capacity, ' \
+                        'events.created_at ' \
+                        'FROM events ' \
+                        'INNER JOIN venues ON events.venue_id=venues.id ' \
+                        'WHERE events.id = %s;',(event_id,))
         response = cursor.fetchall()
         if len(response) > 0:
             return response_formatter_args('event',response)
