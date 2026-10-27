@@ -48,8 +48,12 @@ def populate_table(table):
     '''Reads data from files, populates tables in db by constructing insert string'''
 
     connection = get_connection()
-
-    with open(f'db/data/{table}.json') as file:
+    if __name__ == '__main__':
+        filename = 'data'
+    else:
+        filename = 'test_data'
+    
+    with open(f'db/{filename}/{table}.json') as file:
         data = json.load(file)
 
     for entry in data:
@@ -110,7 +114,7 @@ erd_structure_dict = {
               'created_at':'TIMESTAMPTZ DEFAULT NOW()'}
 }
 
-os.environ['ENV'] = 'development'
+if __name__ == '__main__': os.environ['ENV'] = 'development'
 
 seed()
 
