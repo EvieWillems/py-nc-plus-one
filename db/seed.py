@@ -25,7 +25,7 @@ def setup_table_structure(table, structure):
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute(f"DROP TABLE {table}")
+    cursor.execute(f"DROP TABLE IF EXISTS {table};")
 
     command_string = f"CREATE TABLE {table} ("
 
@@ -34,7 +34,9 @@ def setup_table_structure(table, structure):
 
     command_string = command_string[:-2] + ");"
     cursor.execute(command_string)
-    print(command_string)
+
+    
+    if __name__ == "__main__": print(command_string)
     
     cursor.close()
     connection.commit()
@@ -44,6 +46,7 @@ def setup_table_structure(table, structure):
 def populate_table(table):
 
     '''Reads data from files, populates tables in db by constructing insert string'''
+
     connection = get_connection()
 
     with open(f'db/data/{table}.json') as file:
@@ -52,27 +55,30 @@ def populate_table(table):
     for entry in data:
         
         cursor = connection.cursor()
-        insert_statement = f"INSERT INTO {table} ("
+        insert_statement = f'INSERT INTO {table} ('
 
         for column in entry.keys():
-            insert_statement += f"{column}, "
+            insert_statement += f'{column}, ' 
 
-        insert_statement = insert_statement[:-2]+") VALUES ("
+        insert_statement = insert_statement[:-2]+') VALUES ('
 
         for column in entry.keys():
-            insert_statement += "%s, "
+            insert_statement += '%s, '
 
-        insert_statement = insert_statement[:-2]+");"
+        insert_statement = insert_statement[:-2]+');'
         values = tuple([v for v in entry.values()])
-        
-        print(insert_statement)
-        print(values)
 
         try:
             cursor.execute(insert_statement, values)
+            if __name__ == '__main__':
+                print(insert_statement)
+                print(values)
         except:
-            pass
+            if __name__ == '__main__': print('failed to insert data:',end=' ')
+            print(values)
 
+        
+        
         cursor.close()
         connection.commit()
 
@@ -105,6 +111,6 @@ erd_structure_dict = {
 }
 
 os.environ['ENV'] = 'development'
-print(get_connection())
+
 seed()
 
