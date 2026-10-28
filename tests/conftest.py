@@ -6,7 +6,7 @@ from fastapi import HTTPException
 os.environ['ENV'] = 'testing'
 from main import app
 from db.connection import get_connection
-from db.seed import seed, setup_table_structure, erd_structure_dict
+from seed import seed, setup_table_structure, erd_structure_dict
 
 
 
@@ -58,3 +58,10 @@ def venue_1():
             "address": "address_b",
             "capacity": 50
             }
+
+@pytest.fixture
+def valid_login_attempt():
+    return {
+        'email':'user_c@example.com',
+        'password':'password_c'
+    }

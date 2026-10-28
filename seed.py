@@ -2,11 +2,9 @@ import psycopg2
 from psycopg2.errors import InFailedSqlTransaction, UndefinedTable
 import os
 import json
+from encryption.encryption import hash_password
 
-if not __name__ == '__main__':
-    from db.connection import get_connection
-else:
-    from connection import get_connection
+from db.connection import get_connection, dict_cursor
 
 def seed():
 
@@ -59,6 +57,9 @@ def populate_table(table):
     for entry in data:
         
         cursor = connection.cursor()
+
+        if 'password' in entry.keys(): entry['password'] = hash_password(entry['password'])
+
         insert_statement = f'INSERT INTO {table} ('
 
         for column in entry.keys():
@@ -70,6 +71,7 @@ def populate_table(table):
             insert_statement += '%s, '
 
         insert_statement = insert_statement[:-2]+');'
+        
         values = tuple([v for v in entry.values()])
 
         try:

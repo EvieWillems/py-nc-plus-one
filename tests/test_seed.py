@@ -3,12 +3,12 @@ import os
 import psycopg2
 
 from db.connection import get_connection
-from db.seed import seed, setup_table_structure, erd_structure_dict
+from seed import seed, setup_table_structure, erd_structure_dict
 
 # os.environ['ENV'] = 'testing'
 
 
-def test_seed_sets_up_table_structure(cursor,teardown_and_setup_empty):
+def test_seed_sets_up_table_structure(cursor,full_seed):
     errors_list = []
     for t in erd_structure_dict.keys():
         try:

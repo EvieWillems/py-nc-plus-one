@@ -18,3 +18,6 @@ def get_connection():
         return connection
     else:
         raise RuntimeError("PGDATABASE not set")
+
+def dict_cursor():
+    return get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor)

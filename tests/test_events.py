@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from fastapi import HTTPException
 
 from db.connection import get_connection
-from db.seed import seed, setup_table_structure, erd_structure_dict
+from seed import seed, setup_table_structure, erd_structure_dict
 
 def test_get_events_returns_correct_json_format(client):
     response = client.get('/events').json()
@@ -23,7 +23,7 @@ def test_get_single_event_by_id_returns_correct_json_format(client):
     assert isinstance(response['event'], list)
     assert isinstance(response['event'][0], dict)
 
-def test_get_single_event_by_id_returns_correct_event_and_status_code(client,event_1):
+def test_get_single_event_by_id_returns_correct_event_and_status_code(client):
     response = client.get('/events/1')
     expected_event = {
                         "id": 1,

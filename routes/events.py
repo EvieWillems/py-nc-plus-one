@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from db.connection import get_connection
+from db.connection import get_connection, dict_cursor
 import psycopg2
-from decorators import response_formatter, response_formatter_args
+from utils.utils import response_formatter, response_formatter_args
 
 router = APIRouter(prefix='/events')
 
@@ -9,7 +9,8 @@ router = APIRouter(prefix='/events')
 @router.get('')
 @response_formatter
 def get_all_events():
-    with get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    # with get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    with dict_cursor() as cursor:
         cursor.execute('SELECT ' \
                         'events.id, ' \
                         'events.title, ' \
@@ -30,7 +31,7 @@ def get_single_event_by_id(event_id):
     except:
         raise HTTPException(status_code=400,
                                 detail=f'{event_id} is not a valid integer')
-    with get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:         
+    with dict_cursor() as cursor:         
         cursor.execute('SELECT ' \
                         'events.id, ' \
                         'events.title, ' \
