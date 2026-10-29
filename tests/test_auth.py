@@ -6,6 +6,8 @@ from fastapi import HTTPException
 from exceptions.exceptions import InvalidLoginException
 import jwt
 
+def test_reset_db_auth(full_seed):
+    pass
 
 def test_user_login_validates_matching_credentials(client,valid_login_attempt):
     response = client.post('/auth/login',json=valid_login_attempt).json()

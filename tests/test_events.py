@@ -7,6 +7,9 @@ from fastapi import HTTPException
 from db.connection import get_connection
 from seed import seed, setup_table_structure, erd_structure_dict
 
+def test_reset_db_events(full_seed):
+    pass
+
 def test_get_events_returns_correct_json_format(client):
     response = client.get('/events').json()
     assert isinstance(response, dict)
