@@ -29,7 +29,7 @@ def test_user_login_raises_error_for_invalid_credentials(client):
 def test_missing_fields_raise_bad_request_exception(client):
     
     invalid_login_attempt = {
-        'email':'no_one@nowhere.not'
+        "email": "user_c@example.com"
     }
 
     response = client.post('/auth/login',json=invalid_login_attempt)
@@ -39,8 +39,10 @@ def test_missing_fields_raise_bad_request_exception(client):
     assert response.json()['detail'] == 'email or password not supplied'
 
     invalid_login_attempt = {
-            'password':'not_a_password'
+        "password": "password_c"
     }
+
+    response = client.post('/auth/login',json=invalid_login_attempt)
 
     assert response.status_code == 400
     assert response.json()['error'] == 'incomplete credentials'
