@@ -19,8 +19,19 @@ app.include_router(auth_router)
 
 @app.exception_handler(HTTPException)
 def handle_http_exception(request: Request, exc: HTTPException):
-    return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
+    return JSONResponse(status_code=exc.status_code, content={'error':'invalid request', 'detail':exc.detail})
 
 @app.exception_handler(InvalidLoginException)
 def handle_invalid_login_attempt(request: Request, exc: InvalidLoginException):
-    return JSONResponse(status_code=exc.status_code,content={'error':exc.detail})
+    return JSONResponse(status_code=exc.status_code,content={'error':'invalid login', 'detail':exc.detail})
+
+@app.exception_handler(RequestValidationError)
+def handle_request_valdation_error(request: Request, exc: RequestValidationError):
+    error_locs = []
+    for e in exc.errors(): error_locs.extend([l for l in e['loc']])
+    if 'password' in error_locs or 'email' in error_locs:
+        response = JSONResponse(status_code=400,content={'error':'incomplete credentials', 'detail':'email or password not supplied'})
+    else:
+        print(error_locs)
+        response = JSONResponse(status_code=400,content={'error':'invalid request', 'detail':'missing credentials or information'})
+    return response
