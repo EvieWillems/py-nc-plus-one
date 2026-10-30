@@ -5,7 +5,8 @@ from fastapi.testclient import TestClient
 from fastapi import HTTPException
 from exceptions.exceptions import InvalidLoginException
 import jwt
-from conftest import test_dict_cursor
+from conftest import dict_cursor_testing
+from encryption.encryption import verify_password
 
 def test_reset_db_auth(full_seed):
     pass
@@ -72,8 +73,39 @@ def test_create_new_user_successfully_creates_new_profile_and_returns_details(cl
 def test_created_user_password_hashed(client,teardown_and_setup_empty,user_1):
 
     client.post('/auth/register',json=user_1)
-    with test_dict_cursor() as cursor:
+    with dict_cursor_testing() as cursor:
         cursor.execute('SELECT password FROM users WHERE id = 1')
         password = cursor.fetchall()[0][0]
 
     assert password != user_1['password']
+    assert verify_password(user_1['password'],password)
+
+def test_missing_field_in_user_creation_returns_missing_field_error(client,teardown_and_setup_empty):
+
+    invalid_user = {
+        "email": "user_c@example.com"
+    }
+
+    response = client.post('/auth/register',json=invalid_user)
+
+    assert response.status_code == 400
+    assert response.json()['error'] == 'incomplete credentials'
+    assert response.json()['detail'] == 'email or password not supplied'
+
+    invalid_user = {
+            "password": "pssword_1"
+        }
+    
+    response = client.post('/auth/register',json=invalid_user)
+
+    assert response.status_code == 400
+    assert response.json()['error'] == 'incomplete credentials'
+    assert response.json()['detail'] == 'email or password not supplied'
+
+def test_create_user_returns_error_if_email_already_exists(client,full_seed,user_1):
+
+    response = client.post('/auth/register',json=user_1)
+
+    assert response.status_code == 409
+    assert response.json()['error'] == 'existing user'
+    assert response.json()['detail'] == 'user with that email already exists'

@@ -5,7 +5,7 @@ from routes.auth import router as auth_router
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from exceptions.exceptions import InvalidLoginException
+from exceptions.exceptions import InvalidLoginException,ExistingUserException
 
 
 app = FastAPI(title='nc_plus_one_api')
@@ -35,3 +35,7 @@ def handle_request_valdation_error(request: Request, exc: RequestValidationError
         print(error_locs)
         response = JSONResponse(status_code=400,content={'error':'invalid request', 'detail':'missing credentials or information'})
     return response
+
+@app.exception_handler(ExistingUserException)
+def handle_existing_user_error(request: Request, exc: ExistingUserException):
+    return JSONResponse(status_code=exc.status_code,content={'error':'existing user', 'detail':exc.detail})

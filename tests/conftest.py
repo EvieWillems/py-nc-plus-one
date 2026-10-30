@@ -18,7 +18,7 @@ def client():
 def cursor():
     return get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-def test_dict_cursor():
+def dict_cursor_testing():
     return get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 
