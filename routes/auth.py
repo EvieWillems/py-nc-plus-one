@@ -4,11 +4,14 @@ import psycopg2
 from psycopg2.errors import UniqueViolation
 from utils.utils import response_formatter, response_formatter_args, compose_sql_insert
 from schemas import NewUserProfile, LoginDetails
-from encryption.encryption import create_access_token, verify_password
+from security.encryption import create_access_token, verify_password
 from exceptions.exceptions import InvalidLoginException, ExistingUserException
-from encryption.encryption import hash_password
+from security.encryption import hash_password
+from security.user_authentication import authenticate_user
 
 router = APIRouter(prefix='/auth')
+
+
 
 @router.post('/login')
 def user_login(details: LoginDetails):
@@ -40,5 +43,3 @@ def create_new_user_profile(details: NewUserProfile, http_response:Response):
             http_response.status_code = status.HTTP_201_CREATED
             return response_formatter_args('user',response)
         
-
-    

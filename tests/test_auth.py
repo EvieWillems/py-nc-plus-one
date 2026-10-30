@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from exceptions.exceptions import InvalidLoginException
 import jwt
 from conftest import dict_cursor_testing
-from encryption.encryption import verify_password
+from security.encryption import verify_password
 
 def test_reset_db_auth(full_seed):
     pass
@@ -103,7 +103,7 @@ def test_missing_field_in_user_creation_returns_missing_field_error(client,teard
     assert response.json()['detail'] == 'email or password not supplied'
 
     invalid_user = {
-            "password": "pssword_1"
+            "password": "password_1"
         }
     
     response = client.post('/auth/register',json=invalid_user)

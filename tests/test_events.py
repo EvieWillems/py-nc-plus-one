@@ -3,6 +3,7 @@ import os
 import psycopg2
 from fastapi.testclient import TestClient
 from fastapi import HTTPException
+from conftest import dict_cursor_testing, drop_table_and_create_empty
 
 from db.connection import get_connection
 from seed import seed, setup_table_structure, erd_structure_dict
@@ -52,3 +53,22 @@ def test_get_single_event_by_id_raises_correct_exception_for_non_integer(client)
     response = client.get('/events/aardvaark')
     assert response.status_code == 400
     assert response.json()['detail'] == 'aardvaark is not a valid integer'
+
+def test_rsvp_to_event_returns_correct_json_given_valid_token(client,valid_login_attempt):
+
+    expected = {
+        'id':1,
+        'attendee_id':1,
+        'event_id':1
+    }
+
+    drop_table_and_create_empty('rsvps')
+    token = client.post('auth/login',json=valid_login_attempt).json()
+    auth_headers = {'Authorization': f'Bearer {token}'}
+    response = client.post('events/:1/rsvp',headers=auth_headers).json()
+    # with dict_cursor_testing() as cursor:
+    #     cursor.execute('SELECT * FROM rsvps')
+    #     response = cursor.fetchall()
+    assert isinstance(response,dict)
+    for k in expected.keys():
+        assert expected[k] == response['rsvp'][0][k]

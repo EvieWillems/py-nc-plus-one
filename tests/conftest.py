@@ -21,11 +21,14 @@ def cursor():
 def dict_cursor_testing():
     return get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor)
 
+def drop_table_and_create_empty(table):
+    setup_table_structure(table)
+
 
 @pytest.fixture
 def teardown_and_setup_empty():
-    for t,s in erd_structure_dict.items():
-        setup_table_structure(t,s)
+    for t in erd_structure_dict.keys():
+        setup_table_structure(t)
 
 @pytest.fixture
 def full_seed():

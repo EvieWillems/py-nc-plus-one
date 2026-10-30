@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-
+from fastapi.security import HTTPBearer
 
 class NewUserProfile(BaseModel):
     name: str
@@ -10,3 +10,5 @@ class NewUserProfile(BaseModel):
 class LoginDetails(BaseModel):
     email: EmailStr
     password: str
+
+user_auth_scheme = HTTPBearer(auto_error=False)

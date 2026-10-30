@@ -1,7 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Request
 from db.connection import get_connection, dict_cursor
 import psycopg2
-from utils.utils import response_formatter, response_formatter_args
+from utils.utils import response_formatter, response_formatter_args, compose_sql_insert
+from security.user_authentication import authenticate_user
+import jwt
+
 
 router = APIRouter(prefix='/events')
 
@@ -50,3 +53,17 @@ def get_single_event_by_id(event_id):
             return response_formatter_args('event',response)
         else:
             raise HTTPException(status_code=404,detail='event_id not found')
+
+
+@router.post('/:{event_id}/rsvp')
+def create_new_rsvp_for_user(event_id:int, user_id:int=Depends(authenticate_user)):
+    
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute(*compose_sql_insert('rsvps',{'attendee_id':user_id,'event_id':event_id}))
+            conn.commit()
+            cursor.execute('SELECT * FROM rsvps WHERE attendee_id = %s AND event_id = %s;',(user_id,event_id))
+            response = cursor.fetchall()
+
+    return response_formatter_args('rsvp',response)
+                    
