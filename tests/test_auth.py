@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from fastapi import HTTPException
 from exceptions.exceptions import InvalidLoginException
 import jwt
+from conftest import test_dict_cursor
 
 def test_reset_db_auth(full_seed):
     pass
@@ -47,3 +48,32 @@ def test_missing_fields_raise_bad_request_exception(client):
     assert response.status_code == 400
     assert response.json()['error'] == 'incomplete credentials'
     assert response.json()['detail'] == 'email or password not supplied'
+
+def test_create_new_user_successfully_creates_new_profile_and_returns_details(client,teardown_and_setup_empty,user_1):
+
+    expected = {
+        'id':1,
+        'name': 'user_c',
+        'email': 'user_c@example.com'
+    }
+
+    response = client.post('/auth/register',json=user_1)
+
+    assert response.status_code == 201
+
+    response_json = response.json()
+
+    assert isinstance(response_json, dict)
+    assert isinstance(response_json['user'][0], dict)
+    assert isinstance(response_json['user'], list)
+    for f in expected.keys():
+        assert expected[f] == response_json['user'][0][f]
+
+def test_created_user_password_hashed(client,teardown_and_setup_empty,user_1):
+
+    client.post('/auth/register',json=user_1)
+    with test_dict_cursor() as cursor:
+        cursor.execute('SELECT password FROM users WHERE id = 1')
+        password = cursor.fetchall()[0][0]
+
+    assert password != user_1['password']

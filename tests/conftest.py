@@ -18,6 +18,10 @@ def client():
 def cursor():
     return get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor)
 
+def test_dict_cursor():
+    return get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+
 @pytest.fixture
 def teardown_and_setup_empty():
     for t,s in erd_structure_dict.items():
