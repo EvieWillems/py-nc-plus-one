@@ -2,24 +2,25 @@ import psycopg2
 from psycopg2.errors import InFailedSqlTransaction, UndefinedTable
 import os
 import json
-from encryption.encryption import hash_password
+from security.encryption import hash_password
 
 from db.connection import get_connection, dict_cursor
 
 def seed():
 
-    for t,s in erd_structure_dict.items():
-        setup_table_structure(t,s)
+    for t in erd_structure_dict.keys():
+        setup_table_structure(t)
 
     for t in erd_structure_dict.keys():
         populate_table(t)
 
     
         
-def setup_table_structure(table, structure):
+def setup_table_structure(table):
 
     '''Sets up table structure by looping through structured dictionary'''
-
+    structure = erd_structure_dict[table]
+    
     connection = get_connection()
     cursor = connection.cursor()
 
