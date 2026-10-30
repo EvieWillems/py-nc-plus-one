@@ -70,6 +70,16 @@ def test_create_new_user_successfully_creates_new_profile_and_returns_details(cl
     for f in expected.keys():
         assert expected[f] == response_json['user'][0][f]
 
+def test_create_new_user_doesnt_return_password_in_any_form(client,teardown_and_setup_empty,user_1):
+
+    response = client.post('/auth/register',json=user_1).json()
+
+    for u in response['user']:
+        assert not 'password' in u.keys()
+        assert not user_1['password'] in u.values()
+
+
+
 def test_created_user_password_hashed(client,teardown_and_setup_empty,user_1):
 
     client.post('/auth/register',json=user_1)
