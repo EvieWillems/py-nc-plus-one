@@ -39,3 +39,4 @@ def handle_request_valdation_error(request: Request, exc: RequestValidationError
 @app.exception_handler(ExistingUserException)
 def handle_existing_user_error(request: Request, exc: ExistingUserException):
     return JSONResponse(status_code=exc.status_code,content={'error':'existing user', 'detail':exc.detail})
+

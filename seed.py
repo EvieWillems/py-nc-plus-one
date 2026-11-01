@@ -3,6 +3,7 @@ from psycopg2.errors import InFailedSqlTransaction, UndefinedTable
 import os
 import json
 from security.encryption import hash_password
+from utils.utils import compose_sql_insert
 
 from db.connection import get_connection, dict_cursor
 
@@ -61,28 +62,13 @@ def populate_table(table):
 
         if 'password' in entry.keys(): entry['password'] = hash_password(entry['password'])
 
-        insert_statement = f'INSERT INTO {table} ('
-
-        for column in entry.keys():
-            insert_statement += f'{column}, ' 
-
-        insert_statement = insert_statement[:-2]+') VALUES ('
-
-        for column in entry.keys():
-            insert_statement += '%s, '
-
-        insert_statement = insert_statement[:-2]+');'
-        
-        values = tuple([v for v in entry.values()])
-
         try:
-            cursor.execute(insert_statement, values)
+            cursor.execute(*compose_sql_insert(table,entry))
             if __name__ == '__main__':
-                print(insert_statement)
-                print(values)
+                print(f'Inserted data: {entry.items()}')
         except:
             if __name__ == '__main__': print('failed to insert data:',end=' ')
-            print(values)
+            print(entry.items())
 
         
         
