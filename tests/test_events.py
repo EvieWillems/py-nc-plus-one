@@ -3,7 +3,7 @@ import os
 import psycopg2
 from fastapi.testclient import TestClient
 from fastapi import HTTPException
-from conftest import dict_cursor_testing, drop_table_and_create_empty
+from conftest import dict_cursor_testing, drop_table_and_create_empty, create_rsvp
 
 from db.connection import get_connection
 from seed import seed, setup_table_structure, erd_structure_dict
@@ -108,15 +108,18 @@ def test_validated_rsvp_to_event_returns_error_when_rsvp_for_user_event_pair_alr
     assert response.status_code == 409
     assert response.json() == expected
 
-def test_rsvp_for_non_existent_event_returns_correct_error_and_status_code(client,valid_login_attempt,create_rsvp):
+def test_rsvp_for_non_existent_event_returns_correct_error_and_status_code(client,valid_token):
         
-        expected = {'error':'invalid request','detail':'event_id not found'}
+    expected = {'error':'invalid request','detail':'event_id not found'}
+    drop_table_and_create_empty('rsvps')
+    drop_table_and_create_empty('events')
+    response = create_rsvp(client,valid_token)
+    assert response.status_code == 404
+    assert response.json() == expected
 
-        response = create_rsvp
-        assert response.status_code == 404
-        assert response.json() == expected
+def test_delete_rsvp_deletes_rsvp_when_validated(client,valid_token,full_seed):
 
-def test_delete_rsvp_deletes_rsvp_when_validated(client,create_rsvp,valid_token):
-
+    create_rsvp(client,valid_token)
     auth_headers = {'Authorization': f'Bearer {valid_token}'}
-    client.delete('/events/:1/rsvp/me',headers=auth_headers)
+    response = client.delete('/events/:1/rsvp/me',headers=auth_headers)
+    assert response.status_code == 204

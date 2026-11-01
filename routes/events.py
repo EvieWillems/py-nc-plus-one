@@ -73,4 +73,17 @@ def create_new_rsvp_for_user(event_id:int, user_id:int=Depends(authenticate_user
                 conn.commit()
 
     return response_formatter_args('rsvp',response)
-                    
+
+
+@router.delete('/:{event_id}/rsvp/me', status_code=204)
+def delete_existing_rsvp(event_id:int, user_id:int=Depends(authenticate_user)):
+
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute('SELECT * FROM rsvps WHERE event_id = %s', (event_id,))
+            if len(cursor.fetchall()) == 0:
+                raise HTTPException(status_code=404,detail='event_id not found')
+            cursor.execute('DELETE FROM rsvps WHERE event_id = %s AND attendee_id = %s', (event_id,user_id))
+            conn.commit()
+    return
+    

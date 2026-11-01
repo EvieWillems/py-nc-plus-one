@@ -43,7 +43,8 @@ def event_1():
             "starts_at": "2026-02-02T10:00:00+00:00",
             "ends_at": "2026-02-02T11:00:00+00:00",
             "organiser_id": 1,
-            "venue_id": 3}
+            "venue_id": 3
+            }
         
 @pytest.fixture
 def rsvp_1():
@@ -69,19 +70,17 @@ def venue_1():
 @pytest.fixture
 def valid_login_attempt():
     return {
-        'email':'user_c@example.com',
-        'password':'password_c'
-    }
+            'email':'user_c@example.com',
+            'password':'password_c'
+            }
 
 @pytest.fixture
 def valid_token(client,valid_login_attempt):
     return client.post('auth/login',json=valid_login_attempt).json()
 
 
-@pytest.fixture
 def create_rsvp(client,valid_token):
     drop_table_and_create_empty('rsvps')
-    drop_table_and_create_empty('events')
     auth_headers = {'Authorization': f'Bearer {valid_token}'}
     response = client.post('events/:1/rsvp',headers=auth_headers)
     return response
