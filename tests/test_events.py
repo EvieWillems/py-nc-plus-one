@@ -70,6 +70,7 @@ def test_rsvp_to_event_returns_correct_json_given_valid_token(client,valid_token
     for k in expected.keys():
         assert expected[k] == response['rsvp'][0][k]
 
+
 def test_rsvp_to_event_returns_correct_error_and_status_code_given_invalid_token(client):
 
     expected = {'error':'invalid request','detail':'Unauthorized'}
@@ -82,7 +83,6 @@ def test_rsvp_to_event_returns_correct_error_and_status_code_given_invalid_token
     assert response.status_code == 401
     assert response.json() == expected
 
-    expired_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzkzNTMzMzk3fQ.tpIQ_dGcYSXqFCLp1Lw9Paxkw8x3aK3U9mrt670SPq4"
 
 def test_rsvp_to_event_returns_correct_error_and_status_code_given_expired_token(client):
 
@@ -123,3 +123,28 @@ def test_delete_rsvp_deletes_rsvp_when_validated(client,valid_token,full_seed):
     auth_headers = {'Authorization': f'Bearer {valid_token}'}
     response = client.delete('/events/:1/rsvp/me',headers=auth_headers)
     assert response.status_code == 204
+
+def test_delete_rsvp_returns_unauthorized_error_with_invalid_token(client,valid_token,full_seed):
+
+    invalid_token = "yeJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzkzNTMzMzk3fQ.tpIQ_dGcYSXqFCLp1Lw9Paxkw8x3aK3U9mrt670SPq4"
+    expected = {'error':'invalid request','detail':'Unauthorized'}
+
+    create_rsvp(client,valid_token)
+    auth_headers = {'Authorization': f'Bearer {invalid_token}'}
+    response = client.delete('/events/:1/rsvp/me',headers=auth_headers)
+
+    assert response.status_code == 401
+    assert response.json() == expected
+
+def test_delete_rsvp_raises_correct_exception_when_event_doesnt_exist(client,valid_token):
+        
+    expected = {'error':'invalid request','detail':'event_id not found'}
+
+    drop_table_and_create_empty('rsvps')
+    drop_table_and_create_empty('events')
+
+    response = auth_headers = {'Authorization': f'Bearer {valid_token}'}
+    response = client.delete('/events/:1/rsvp/me',headers=auth_headers)
+
+    assert response.status_code == 404
+    assert response.json() == expected
