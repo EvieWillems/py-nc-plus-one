@@ -5,7 +5,7 @@ from routes.auth import router as auth_router
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from exceptions.exceptions import InvalidLoginException,ExistingUserException
+from exceptions.exceptions import InvalidLoginException,ExistingUserException,RSVPConflictException
 
 
 app = FastAPI(title='nc_plus_one_api')
@@ -40,3 +40,6 @@ def handle_request_valdation_error(request: Request, exc: RequestValidationError
 def handle_existing_user_error(request: Request, exc: ExistingUserException):
     return JSONResponse(status_code=exc.status_code,content={'error':'existing user', 'detail':exc.detail})
 
+@app.exception_handler(RSVPConflictException)
+def handle_existing_RSVP_exception(request: Request, exc: RSVPConflictException):
+    return JSONResponse(status_code=exc.status_code,content={'error':'rsvp conflict','detail':exc.detail})

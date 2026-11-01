@@ -66,9 +66,59 @@ def test_rsvp_to_event_returns_correct_json_given_valid_token(client,valid_login
     token = client.post('auth/login',json=valid_login_attempt).json()
     auth_headers = {'Authorization': f'Bearer {token}'}
     response = client.post('events/:1/rsvp',headers=auth_headers).json()
-    # with dict_cursor_testing() as cursor:
-    #     cursor.execute('SELECT * FROM rsvps')
-    #     response = cursor.fetchall()
+
     assert isinstance(response,dict)
     for k in expected.keys():
         assert expected[k] == response['rsvp'][0][k]
+
+def test_rsvp_to_event_returns_correct_error_and_status_code_given_invalid_token(client):
+
+    expected = {'error':'invalid request','detail':'Unauthorized'}
+
+    invalid_token = "yeJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzkzNTMzMzk3fQ.tpIQ_dGcYSXqFCLp1Lw9Paxkw8x3aK3U9mrt670SPq4"
+    drop_table_and_create_empty('rsvps')
+    auth_headers = {'Authorization': f'Bearer {invalid_token}'}
+    response = client.post('events/:1/rsvp',headers=auth_headers)
+
+    assert response.status_code == 401
+    assert response.json() == expected
+
+    expired_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzkzNTMzMzk3fQ.tpIQ_dGcYSXqFCLp1Lw9Paxkw8x3aK3U9mrt670SPq4"
+
+def test_rsvp_to_event_returns_correct_error_and_status_code_given_expired_token(client):
+
+    expected = {'error':'invalid request','detail':'Unauthorized'}
+
+    expired_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzkzNTMzMzk3fQ.tpIQ_dGcYSXqFCLp1Lw9Paxkw8x3aK3U9mrt670SPq4"
+    drop_table_and_create_empty('rsvps')
+    auth_headers = {'Authorization': f'Bearer {expired_token}'}
+    response = client.post('events/:1/rsvp',headers=auth_headers)
+
+    assert response.status_code == 401
+    assert response.json() == expected
+
+def test_validated_rsvp_to_event_returns_error_when_rsvp_for_user_event_pair_already_exists(client,valid_login_attempt):
+    
+    expected = {'error':'rsvp conflict','detail':'user has already rsvpd to event 1'}
+    
+    drop_table_and_create_empty('rsvps')
+    token = client.post('auth/login',json=valid_login_attempt).json()
+    auth_headers = {'Authorization': f'Bearer {token}'}
+    client.post('events/:1/rsvp',headers=auth_headers)
+    response = client.post('events/:1/rsvp',headers=auth_headers)
+
+    assert response.status_code == 409
+    assert response.json() == expected
+
+def test_rsvp_for_non_existent_event_returns_correct_error_and_status_code(client,valid_login_attempt):
+        
+        expected = {'error':'invalid request','detail':'event_id not found'}
+        
+        drop_table_and_create_empty('rsvps')
+        drop_table_and_create_empty('events')
+        token = client.post('auth/login',json=valid_login_attempt).json()
+        auth_headers = {'Authorization': f'Bearer {token}'}
+        response = client.post('events/:1/rsvp',headers=auth_headers)
+    
+        assert response.status_code == 404
+        assert response.json() == expected
