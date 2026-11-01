@@ -72,3 +72,16 @@ def valid_login_attempt():
         'email':'user_c@example.com',
         'password':'password_c'
     }
+
+@pytest.fixture
+def valid_token(client,valid_login_attempt):
+    return client.post('auth/login',json=valid_login_attempt).json()
+
+
+@pytest.fixture
+def create_rsvp(client,valid_token):
+    drop_table_and_create_empty('rsvps')
+    drop_table_and_create_empty('events')
+    auth_headers = {'Authorization': f'Bearer {valid_token}'}
+    response = client.post('events/:1/rsvp',headers=auth_headers)
+    return response

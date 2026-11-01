@@ -54,7 +54,7 @@ def test_get_single_event_by_id_raises_correct_exception_for_non_integer(client)
     assert response.status_code == 400
     assert response.json()['detail'] == 'aardvaark is not a valid integer'
 
-def test_rsvp_to_event_returns_correct_json_given_valid_token(client,valid_login_attempt):
+def test_rsvp_to_event_returns_correct_json_given_valid_token(client,valid_token):
 
     expected = {
         'id':1,
@@ -63,8 +63,7 @@ def test_rsvp_to_event_returns_correct_json_given_valid_token(client,valid_login
     }
 
     drop_table_and_create_empty('rsvps')
-    token = client.post('auth/login',json=valid_login_attempt).json()
-    auth_headers = {'Authorization': f'Bearer {token}'}
+    auth_headers = {'Authorization': f'Bearer {valid_token}'}
     response = client.post('events/:1/rsvp',headers=auth_headers).json()
 
     assert isinstance(response,dict)
@@ -97,28 +96,27 @@ def test_rsvp_to_event_returns_correct_error_and_status_code_given_expired_token
     assert response.status_code == 401
     assert response.json() == expected
 
-def test_validated_rsvp_to_event_returns_error_when_rsvp_for_user_event_pair_already_exists(client,valid_login_attempt):
+def test_validated_rsvp_to_event_returns_error_when_rsvp_for_user_event_pair_already_exists(client,valid_token):
     
     expected = {'error':'rsvp conflict','detail':'user has already rsvpd to event 1'}
     
     drop_table_and_create_empty('rsvps')
-    token = client.post('auth/login',json=valid_login_attempt).json()
-    auth_headers = {'Authorization': f'Bearer {token}'}
+    auth_headers = {'Authorization': f'Bearer {valid_token}'}
     client.post('events/:1/rsvp',headers=auth_headers)
     response = client.post('events/:1/rsvp',headers=auth_headers)
 
     assert response.status_code == 409
     assert response.json() == expected
 
-def test_rsvp_for_non_existent_event_returns_correct_error_and_status_code(client,valid_login_attempt):
+def test_rsvp_for_non_existent_event_returns_correct_error_and_status_code(client,valid_login_attempt,create_rsvp):
         
         expected = {'error':'invalid request','detail':'event_id not found'}
-        
-        drop_table_and_create_empty('rsvps')
-        drop_table_and_create_empty('events')
-        token = client.post('auth/login',json=valid_login_attempt).json()
-        auth_headers = {'Authorization': f'Bearer {token}'}
-        response = client.post('events/:1/rsvp',headers=auth_headers)
-    
+
+        response = create_rsvp
         assert response.status_code == 404
         assert response.json() == expected
+
+def test_delete_rsvp_deletes_rsvp_when_validated(client,create_rsvp,valid_token):
+
+    auth_headers = {'Authorization': f'Bearer {valid_token}'}
+    client.delete('/events/:1/rsvp/me',headers=auth_headers)
