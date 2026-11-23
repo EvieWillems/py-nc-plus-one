@@ -6,10 +6,18 @@ from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from exceptions.exceptions import InvalidLoginException,ExistingUserException,RSVPConflictException
+from fastapi.middleware.cors import CORSMiddleware
+
 
 
 app = FastAPI(title='nc_plus_one_api')
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(events_router)
 app.include_router(auth_router)
