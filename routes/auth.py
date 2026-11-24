@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Response, status
+from fastapi import Depends, FastAPI, APIRouter, HTTPException, Response, status
 from db.connection import get_connection, dict_cursor
 import psycopg2
 from psycopg2.errors import UniqueViolation
@@ -42,4 +42,14 @@ def create_new_user_profile(details: NewUserProfile, http_response:Response):
             response = cursor.fetchall()
             http_response.status_code = status.HTTP_201_CREATED
             return response_formatter_args('user',response)
+
         
+@router.get('/user')
+def get_details_from_token(user_id=Depends(authenticate_user)):
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute('SELECT id, name, email, created_at FROM users WHERE id = %s', (user_id,))
+            response = cursor.fetchall()
+            if len(response) == 0:
+                raise HTTPException(status_code=404,detail='user not found')
+            return response_formatter_args('details',response)

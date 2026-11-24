@@ -28,7 +28,7 @@ def get_all_events():
         return 'events',response
 
     
-@router.get('/{event_id}')
+@router.get('/:{event_id}')
 def get_single_event_by_id(event_id):
     try:
         int(event_id)
@@ -77,7 +77,6 @@ def create_new_rsvp_for_user(event_id:int, user_id:int=Depends(authenticate_user
 
 @router.delete('/:{event_id}/rsvp/me', status_code=204)
 def delete_existing_rsvp(event_id:int, user_id:int=Depends(authenticate_user)):
-
     with get_connection() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
             cursor.execute('SELECT * FROM rsvps WHERE event_id = %s', (event_id,))
@@ -86,4 +85,22 @@ def delete_existing_rsvp(event_id:int, user_id:int=Depends(authenticate_user)):
             cursor.execute('DELETE FROM rsvps WHERE event_id = %s AND attendee_id = %s', (event_id,user_id))
             conn.commit()
     return
+
     
+@router.get('/myrsvps')
+def get_users_rsvpd_events(user_id:int=Depends(authenticate_user)):
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute('SELECT '\
+                            'rsvps.id AS rsvp_id, '\
+                            'events.id AS event_id, '\
+                            'events.title, '\
+                            'events.starts_at, '\
+                            'venues.name AS location '\
+                            'FROM rsvps '\
+                            'INNER JOIN events ON events.id=rsvps.event_id '\
+                            'INNER JOIN venues ON venues.id=events.venue_id '\
+                            'WHERE rsvps.attendee_id = %s',
+                            (user_id,))
+            response = cursor.fetchall()
+    return response_formatter_args('rsvps',response)
