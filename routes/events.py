@@ -13,7 +13,6 @@ router = APIRouter(prefix='/events')
 @router.get('')
 @response_formatter
 def get_all_events():
-    # with get_connection().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
     with dict_cursor() as cursor:
         cursor.execute('SELECT ' \
                         'events.id, ' \
@@ -93,7 +92,7 @@ def get_users_rsvpd_events(user_id:int=Depends(authenticate_user)):
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
             cursor.execute('SELECT '\
                             'rsvps.id AS rsvp_id, '\
-                            'events.id AS event_id, '\
+                            'events.id, '\
                             'events.title, '\
                             'events.starts_at, '\
                             'venues.name AS location '\
@@ -103,4 +102,4 @@ def get_users_rsvpd_events(user_id:int=Depends(authenticate_user)):
                             'WHERE rsvps.attendee_id = %s',
                             (user_id,))
             response = cursor.fetchall()
-    return response_formatter_args('rsvps',response)
+    return response_formatter_args('events',response)
