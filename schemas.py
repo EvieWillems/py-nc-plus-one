@@ -11,4 +11,13 @@ class LoginDetails(BaseModel):
     email: EmailStr
     password: str
 
+class EventDetails(BaseModel):
+    title:str
+    description:str
+    starts_at:str
+    ends_at:str
+    location:str
+
+
+
 user_auth_scheme = HTTPBearer(auto_error=False)

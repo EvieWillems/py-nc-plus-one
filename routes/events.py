@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from db.connection import get_connection, dict_cursor
 import psycopg2
+from schemas import EventDetails
 from utils.utils import response_formatter, response_formatter_args, compose_sql_insert
 from security.user_authentication import authenticate_user
 from exceptions.exceptions import RSVPConflictException
@@ -74,7 +75,7 @@ def create_new_rsvp_for_user(event_id:int, user_id:int=Depends(authenticate_user
     return response_formatter_args('rsvp',response)
 
 
-@router.delete('/:{event_id}/rsvp/me', status_code=204)
+@router.delete('/:{event_id}/rsvp/delete', status_code=204)
 def delete_existing_rsvp(event_id:int, user_id:int=Depends(authenticate_user)):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
@@ -103,3 +104,25 @@ def get_users_rsvpd_events(user_id:int=Depends(authenticate_user)):
                             (user_id,))
             response = cursor.fetchall()
     return response_formatter_args('events',response)
+
+@router.post('/new')
+def create_new_event(details:EventDetails,user_id:int=Depends(authenticate_user)):
+    if not user_id:
+        raise('error: user not authenticated')
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            try:
+                details = dict(details)
+                event_details = {
+                    'title':details['title'],
+                    'description':details['description'],
+                    # 'starts_at':details['starts_at'],
+                    # 'ends_at':details['ends_at'],
+                    'venue_id':1,
+                    'organiser_id':user_id
+                }
+                cursor.execute(*compose_sql_insert('events',event_details))    
+            except:
+                raise HTTPException(status_code=400,detail=f'failed to insert data: {event_details}')
+            conn.commit()
+    return {'status':201,'detail':'resource created'}
